@@ -20,7 +20,6 @@ go mod tidy
 
 3. Lineで送信時に必要なConfigファイルを作成
 ```
-mkdir configs
 touch configs/config.json
 ```
 
