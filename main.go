@@ -18,9 +18,16 @@ type LineConf struct {
 
 func main() {
 
+	loop := 0
 	for {
+		loop++
+
 		// chrome起動
-		driver := agouti.ChromeDriver(agouti.Browser("chrome"))
+		driver := agouti.ChromeDriver(
+			agouti.ChromeOptions("args", []string{
+				"--window-size=120,100", // ウィンドウサイズの指定
+			}),
+		)
 
 		if err := driver.Start(); err != nil {
 			log.Fatalln(err)
@@ -48,8 +55,14 @@ func main() {
 		} else {
 			driver.Stop()
 		}
+
+		if loop > 20 {
+			loop = 0
+			time.Sleep(time.Millisecond * 20000)
+			continue
+		}
 		//頻繁にアクセスするとAccessDeniedになってしまうため
-		time.Sleep(time.Millisecond * 1700)
+		time.Sleep(time.Millisecond * 200)
 	}
 
 }
@@ -73,7 +86,7 @@ func notify() {
 		log.Fatal(err)
 	}
 
-	postMessage := linebot.NewTextMessage("done")
+	postMessage := linebot.NewTextMessage("Opened Screen. Check PC.")
 	_, err = line.PushMessage(l.UserID, postMessage).Do()
 	if err != nil {
 		log.Println("post:", err)
