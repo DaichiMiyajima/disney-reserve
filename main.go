@@ -17,30 +17,26 @@ type LineConf struct {
 }
 
 func main() {
+	// chrome起動
+	driver := agouti.ChromeDriver(
+		agouti.ChromeOptions("args", []string{
+			"--window-size=120,100", // ウィンドウサイズの指定
+			"--window-position=-2000000,-200000",
+		}),
+	)
 
-	loop := 0
+	if err := driver.Start(); err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	page, err := driver.NewPage()
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
 	for {
-		loop++
-
-		// chrome起動
-		driver := agouti.ChromeDriver(
-			agouti.ChromeOptions("args", []string{
-				"--window-size=120,100", // ウィンドウサイズの指定
-			}),
-		)
-
-		if err := driver.Start(); err != nil {
-			log.Fatalln(err)
-			return
-		}
-
-		page, err := driver.NewPage()
-		if err != nil {
-			log.Fatalln(err)
-			return
-		}
-
-		// googleにアクセス
 		if err := page.Navigate("https://reserve.tokyodisneyresort.jp/ticket/search/"); err != nil {
 			log.Fatalln(err)
 			return
@@ -52,17 +48,15 @@ func main() {
 		if count >= 1 {
 			defer notify()
 			break
-		} else {
-			driver.Stop()
 		}
 
-		if loop > 20 {
-			loop = 0
-			time.Sleep(time.Millisecond * 20000)
-			continue
+		if err := page.Reset(); err != nil {
+			log.Fatalln(err)
+			return
 		}
+
 		//頻繁にアクセスするとAccessDeniedになってしまうため
-		time.Sleep(time.Millisecond * 200)
+		time.Sleep(time.Millisecond * 400)
 	}
 
 }
